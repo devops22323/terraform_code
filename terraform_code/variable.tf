@@ -43,4 +43,11 @@ variable "instance_type" {
   
 }
 
+# EC2 Instance Key Pair
+variable "instance_keypair" {
+    type = string
+    description = "EC2 Instance Type"
+  
+}
+
 

@@ -44,7 +44,6 @@ resource "aws_internet_gateway" "ntier_igw" {
 # Create Security Group - Web Traffic
 resource "aws_security_group" "web-sg" {
   name        = "web-sg"
-  vpc_id = aws_vpc.ntier.id
   ingress {
     description = "Allow Port 22"
     from_port   = local.ssh_port
@@ -84,6 +83,7 @@ resource "aws_launch_configuration" "web-instance-lc" {
   name_prefix   = "web-instance-lc"
   image_id      = "ami-0ccbb4123e662e194" # Ubuntu AMI from ap-southeast-4
   instance_type = "t3.micro"
+  key_name = var.instance_keypair
   security_groups = [ "aws_security_group.web-sg.id" ]
   user_data     = <<-EOF
               #!/bin/bash
@@ -97,12 +97,12 @@ resource "aws_launch_configuration" "web-instance-lc" {
 resource "aws_autoscaling_group" "web-asg" {
   name                 = "web-asg"
   # Attach ASG to public subnets for external access
-  availability_zones = [ "ap-southeast-4a", "ap-southeast-4b", "ap-southeast-4c" ]
+  availability_zones = [ "ap-southeast-4a" ]
   launch_configuration = aws_launch_configuration.web-instance-lc.name
   min_size             = 2
   max_size             = 4
   desired_capacity     = 2
-
+  
   tag {
     key                 = "Name"
     value               = "Asg-web-instance"
