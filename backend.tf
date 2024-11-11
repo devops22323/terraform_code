@@ -1,6 +1,6 @@
 terraform {
   backend "remote" {
-    hostname     = "app.terrafrom.io"
+    hostname     = "app.terraform.io"
     organization = "DmcCorpTest"
   }
   workspaces {
