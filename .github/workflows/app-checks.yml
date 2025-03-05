@@ -3,7 +3,7 @@ name: Application Checks
 on:
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   application-checks:
