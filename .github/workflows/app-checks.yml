@@ -9,6 +9,8 @@ jobs:
   application-checks:
     name: Validate
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - name: Checkout Feature Branch Code
         uses: actions/checkout@v3
