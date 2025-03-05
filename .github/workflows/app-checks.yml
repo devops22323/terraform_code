@@ -22,3 +22,23 @@ jobs:
           echo "Running tests..."
           echo "Tests completed successfully!"
           echo "test_output=Tests completed successfully!" >> $GITHUB_OUTPUT
+
+      - name: Updating PR description with Test Results of Automated Checks
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const output = "${{ steps.run-tests.outputs.test_output }}";
+            const prNumber = context.payload.pull_request.number;
+            const currentBody = context.payload.pull_request.body || "";
+
+            // Append the test output to the PR description
+            const newBody = `${currentBody}\n\n**Test Results:**\n${output}`;
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              body: newBody
+            });
+
+            console.log("PR description updated successfully!");
