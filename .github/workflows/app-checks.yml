@@ -20,27 +20,51 @@ jobs:
 
       - name: Run Tests
         id: run-tests
+        if: success()
         run: |
           echo "Running tests..."
           echo "Tests completed successfully!"
           echo "test_output=Tests completed successfully!" >> $GITHUB_OUTPUT
 
-      - name: Updating PR description with Test Results of Automated Checks
+      - name: Update PR Comment with Test Results
         uses: actions/github-script@v6
         with:
           script: |
             const output = "${{ steps.run-tests.outputs.test_output }}";
             const prNumber = context.payload.pull_request.number;
-            const currentBody = context.payload.pull_request.body || "";
 
-            // Append the test output to the PR description
-            const newBody = `${currentBody}\n\n**Test Results:**\n${output}`;
-
-            await github.rest.pulls.update({
+            // Check if a comment already exists from this workflow
+            const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: prNumber,
-              body: newBody
+              issue_number: prNumber,
             });
 
-            console.log("PR description updated successfully!");
+            // Find the comment created by this workflow (if any)
+            const botComment = comments.find(comment =>
+              comment.user.login === 'github-actions[bot]' &&
+              comment.body.includes('**Test Results:**')
+            );
+
+            // Create or update the comment
+            const commentBody = `**Test Results:**\n${output}`;
+
+            if (botComment) {
+              // Update the existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody,
+              });
+              console.log("Updated existing PR comment.");
+            } else {
+              // Create a new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: commentBody,
+              });
+              console.log("Created new PR comment.");
+            }
