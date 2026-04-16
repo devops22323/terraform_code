@@ -1,5 +1,5 @@
 resource "azurerm_resource_group" "example_rg" {
-  name     = "{var.rg_prefix}-RG"
+  name     = "${var.rg_prefix}-RG"
   location = "Australia East"
 }
 
